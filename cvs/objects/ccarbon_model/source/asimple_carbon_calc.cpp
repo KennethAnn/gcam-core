@@ -6,7 +6,7 @@
 * CONTRACTOR MAKES ANY WARRANTY, EXPRESS OR IMPLIED, OR ASSUMES ANY
 * LIABILITY FOR THE USE OF THIS SOFTWARE. This notice including this
 * sentence must appear on any copies of this computer software.
-* 
+*
 * EXPORT CONTROL
 * User agrees that the Software will not be shipped, transferred or
 * exported into any country or used in any manner prohibited by the
@@ -21,17 +21,17 @@
 * (including without limitation Iran, Syria, Sudan, Cuba, and North Korea)
 *     and that User is not otherwise prohibited
 * under the Export Laws from receiving the Software.
-* 
+*
 * Copyright 2011 Battelle Memorial Institute.  All Rights Reserved.
-* Distributed as open-source under the terms of the Educational Community 
+* Distributed as open-source under the terms of the Educational Community
 * License version 2.0 (ECL 2.0). http://www.opensource.org/licenses/ecl2.php
-* 
+*
 * For further details, see: http://www.globalchange.umd.edu/models/gcam/
 *
 */
 
 
-/*! 
+/*!
  * \file asimple_carbon_calc.cpp
  * \ingroup Objects
  * \brief ASimpleCarbonCalc class source file.
@@ -87,7 +87,7 @@ void ASimpleCarbonCalc::initCalc( const int aPeriod ) {
 
 double ASimpleCarbonCalc::calc( const int aPeriod, const int aEndYear, const CarbonCalcMode aCalcMode ) {
     const Modeltime* modeltime = scenario->getModeltime();
-    
+
     // KVC_IESM: First, construct the carbon density vectors, by appending the historic
     //           carbon density to the future carbon density. There may be a better way to
     //           do this, but I'm not seeing it right now.
@@ -101,7 +101,7 @@ double ASimpleCarbonCalc::calc( const int aPeriod, const int aEndYear, const Car
             mBelowGroundCarbonDensity[ year ] = getActualBelowGroundCarbonDensity( year );
         }
     }
-    
+
     // If this is a land-use history year...
     if( aPeriod == 0 ) {
         /*!
@@ -115,7 +115,7 @@ double ASimpleCarbonCalc::calc( const int aPeriod, const int aEndYear, const Car
             const double aboveGroundCarbonDensity = mLandUseHistory->getHistoricAboveGroundCarbonDensity();
 
             double currCarbonStock = aboveGroundCarbonDensity * mLandUseHistory->getAllocation( CarbonModelUtils::getStartYear() );
-            
+
             double prevLand = mLandUseHistory->getAllocation( CarbonModelUtils::getStartYear() - 1 );
             for( int year = CarbonModelUtils::getStartYear(); year <= mLandUseHistory->getMaxYear(); ++year ) {
                 double currLand = mLandUseHistory->getAllocation( year );
@@ -137,7 +137,7 @@ double ASimpleCarbonCalc::calc( const int aPeriod, const int aEndYear, const Car
         int year = prevModelYear + 1;
         YearVector<double> currEmissionsAbove( year, aEndYear, 0.0 );
         YearVector<double> currEmissionsBelow( year, aEndYear, 0.0 );
-        
+
         year = prevModelYear;
         double currLand = aPeriod == 1 ? mLandUseHistory->getAllocation( prevModelYear ) :
             // we need to be careful about accessing the land allocation from a previous timestep
@@ -162,7 +162,7 @@ double ASimpleCarbonCalc::calc( const int aPeriod, const int aEndYear, const Car
                 mCarbonStock[ year ] = mCarbonStock[ year - 1 ] - ( mTotalEmissionsAbove[ year ] + currEmissionsAbove[ year ] );
             }
         }
-        
+
         if( aCalcMode == eStoreResults ) {
             // add current emissions to the total
             for( year = prevModelYear + 1; year <= aEndYear; ++year ) {
@@ -187,7 +187,7 @@ double ASimpleCarbonCalc::calc( const int aPeriod, const int aEndYear, const Car
             return mTotalEmissions[ aEndYear ] + currEmissionsAbove[ aEndYear ] + currEmissionsBelow[ aEndYear ];
         }
     }
-    
+
     return mTotalEmissions[ aEndYear ];
 }
 
@@ -216,7 +216,7 @@ void ASimpleCarbonCalc::calcAboveGroundCarbonEmission( const double aPrevCarbonS
     if( util::isEqual( landDiff, 0.0 ) ) {
         return;
     }
-    
+
     // Finally, calculate net land use change emissions from changes in
     // above ground carbon.
     if ( getMatureAge() > 1 && landDiff < 0.0 ) {
@@ -235,7 +235,7 @@ void ASimpleCarbonCalc::calcAboveGroundCarbonEmission( const double aPrevCarbonS
         // If carbon content decreases, then emissions have occurred.
         // Compute the carbon emission as the carbon stock pro rata to
         // the fraction of land converted.
-        
+
         // If the mature age is just one year then sequestration
         // (negative emission) can just be added here as well (so we
         // don't have a separate branch for it).  (It's not obvious,
@@ -281,13 +281,13 @@ void ASimpleCarbonCalc::calcBelowGroundCarbonEmission( const double aLandDiff,
     if( util::isEqual( aLandDiff, 0.0 ) ){
         return;
     }
-    
+
     // Exponential Soil carbon accumulation and decay, with half-life assumed to be
     // the soil time scale divided by ten.  At the half-life, half of the change will
     // have occured, at twice the half-life 75% would have occurred, etc.
     // Note also that the aLandDiff is passed here as previous land minus current land
     // so a positive difference means that emissions will occur and a negative means uptake.
-    
+
     const double halfLife = mSoilTimeScale / 10.0;
     const double log2 = log( 2.0 );
     const double lambda = log2 / halfLife;
@@ -323,7 +323,7 @@ void ASimpleCarbonCalc::calcSigmoidCurve( const double aLandDiff,
      *      year.
      */
     assert( getMatureAge() > 1 );
-    
+
     for( int currYear = aYear; currYear <= aEndYear; ++currYear ){
         // To avoid expensive calculations the difference in the sigmoid curve
         // has already been precomputed.
@@ -345,9 +345,9 @@ double ASimpleCarbonCalc::getNetLandUseChangeEmissionBelow( const int aYear ) co
 
 void ASimpleCarbonCalc::accept( IVisitor* aVisitor, const int aPeriod ) const {
     aVisitor->startVisitCarbonCalc( this, aPeriod );
-    
+
     acceptDerived( aVisitor, aPeriod );
-    
+
     aVisitor->endVisitCarbonCalc( this, aPeriod );
 }
 
@@ -375,7 +375,7 @@ double ASimpleCarbonCalc::getBelowGroundCarbonSubsidyDiscountFactor( ){
     const double log2 = log( 2.0 );
     const double lambda = log2 / halfLife;
     return 1.0 - mPrivateDiscountRate / ( mPrivateDiscountRate + lambda );
-        
+
 }
 
 /*!
